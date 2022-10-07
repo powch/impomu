@@ -3,6 +3,6 @@ const userController = require('../../controller/userController');
 
 router
   .route('/')
-  .get(userController.getImage)
+  .put(userController.getImage)
 
   module.exports = router; 

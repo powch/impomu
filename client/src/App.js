@@ -6,15 +6,10 @@ const AppContainer = styled.div({
   display: "flex",
 });
 
-const Image = styled.img(({ height, width }) => ({
-  height: "1000px",
-  width: "1000px",
-}));
+const Image = styled.img(({ height, width }) => ({}));
 
 const Canvas = styled.canvas(({ height, width }) => ({
   position: "absolute",
-  height: "1000px",
-  width: "1000px",
 }));
 
 const App = () => {
@@ -23,6 +18,7 @@ const App = () => {
 
   const [state, setState] = useState({
     loading: true,
+    imageData: "",
     error: {
       hasError: false,
       errorKey: null,
@@ -34,32 +30,60 @@ const App = () => {
       imgRef.current,
       new faceapi.TinyFaceDetectorOptions()
     );
+    canvasRef.current.innerHtml = faceapi.createCanvasFromMedia(imgRef.current);
 
-    setState({ ...state, loading: false, detectedFaces: detections });
+    faceapi.matchDimensions(canvasRef.current, imgRef.current);
+    faceapi.draw.drawDetections(canvasRef.current, detections);
+
+    detections?.length &&
+      setState({ ...state, loading: false });
   };
 
   useEffect(() => {
-    const loadModels = () =>
+    const loadModelsAndDetectFaces = () =>
       Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri("/models")])
-        .then((data) => detectFaces())
+        .then((data) => {
+          detectFaces();
+        })
         .catch((e) =>
           setState({ ...state, error: { hasError: true, errorKey: `${e}` } })
         );
 
-    imgRef.current && loadModels();
-  }, []);
+    imgRef.current && state.imageData && loadModelsAndDetectFaces();
+  }, [state.imageData]);
 
   return (
-    <AppContainer>
+    <>
       <button
         onClick={() => {
-          const foo = fetch("/api/image", { method: "get" });
+          const foo = fetch("/api/image", {
+            method: "put",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              url: "https://image.shutterstock.com/image-photo/image-business-partners-discussing-documents-600w-125338145.jpg",
+            }),
+          })
+            .then((res) => res.json())
+            .then((res) =>
+              setState({ ...state, imageData: res.data.imageData })
+            )
+            .catch((e) =>
+              setState({
+                ...state,
+                error: { hasError: true, errorKey: `${e}` },
+              })
+            );
         }}
       >
         test
       </button>
-      {/* <Canvas ref={canvasRef} /> */}
-    </AppContainer>
+      <AppContainer>
+        <Image ref={imgRef} src={state.imageData} />
+        <Canvas ref={canvasRef} />
+      </AppContainer>
+    </>
   );
 };
 
