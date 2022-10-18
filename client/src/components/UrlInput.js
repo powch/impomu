@@ -5,12 +5,12 @@ import { theme } from "../constants/theme";
 const StyledInput = styled.input({
   width: "50rem",
   height: "4rem",
-  borderRadius: "0.5rem",
+  borderRadius: "0.75rem",
   border: `2px solid ${theme.greenDarker}`,
   boxShadow: "8px 8px 8px 2px rgba(0, 0, 0, 0.33)",
   fontSize: "1.25rem",
   paddingLeft: "2rem",
-  marginBottom: "4rem",
+  color: theme.fontColor
 });
 
 const UrlInput = ({ appState }) => {

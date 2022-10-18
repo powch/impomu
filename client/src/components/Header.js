@@ -1,13 +1,18 @@
 import React from "react";
 import styled from "styled-components";
 
-const StyledHeader = styled.h1({
-  fontSize: "8rem",
-  color: "#333",
+import PomuTitle from "./PomuTitle";
+
+const HeaderContainer = styled.div({
+  margin: "8rem 0 5rem 0",
 });
 
 const Header = () => {
-  return <StyledHeader>I'm Pomu!</StyledHeader>;
+  return (
+    <HeaderContainer>
+      <PomuTitle />
+    </HeaderContainer>
+  );
 };
 
 export default Header;

@@ -5,10 +5,42 @@ import * as faceapi from "face-api.js";
 import ActionButton from "./components/ActionButton";
 import UrlInput from "./components/UrlInput";
 import Header from "./components/Header";
+import LoadingScreen from "./components/LoadingScreen";
+
+import GetImage from "./rest/GetImage";
 
 const GlobalStyle = createGlobalStyle`
   * {
     font-family: 'Fredoka One', cursive;
+  }
+
+  .bounce-7 {
+    animation-name: bounce-7;
+    animation-timing-function: cubic-bezier(0.28, 0.84, 0.42, 1);
+  }
+
+  @keyframes bounce-7 {
+    0% {
+      transform: scale(1, 1) translateY(0);
+    }
+    10% {
+      transform: scale(1.1, 0.9) translateY(0);
+    }
+    30% {
+      transform: scale(0.9, 1.1) translateY(-100px);
+    }
+    50% {
+      transform: scale(1.05, 0.95) translateY(0);
+    }
+    57% {
+      transform: scale(1, 1) translateY(-7px);
+    }
+    64% {
+      transform: scale(1, 1) translateY(0);
+    }
+    100% {
+      transform: scale(1, 1) translateY(0);
+    }
   }
 `;
 
@@ -19,14 +51,14 @@ const AppContainer = styled.div({
   alignItems: "center",
 });
 
-const Image = styled.img(({ height, width }) => ({}));
+const Image = styled.img({});
 
-const Canvas = styled.canvas(({ height, width }) => ({
+const Canvas = styled.canvas({
   position: "absolute",
-}));
+});
 
 const FormContainer = styled.div({
-  marginTop: "8rem",
+  marginTop: "5rem",
   width: "100%",
   display: "flex",
   flexDirection: "column",
@@ -41,49 +73,92 @@ const ImageContainer = styled.div({
   alignItems: "center",
 });
 
+const ButtonContainer = styled.div({
+  marginTop: "4rem",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  width: "100%",
+});
+
 const App = () => {
   const imgRef = useRef();
   const canvasRef = useRef();
 
   const [state, setState] = useState({
-    loading: true,
+    loading: false,
+    isDetecting: false,
     imageData: "",
-    inputUrl: "",
+    inputUrl:
+      "https://image.shutterstock.com/image-photo/image-business-partners-discussing-documents-600w-125338145.jpg",
     error: {
       hasError: false,
       errorKey: null,
     },
   });
 
+  const hasImage = state.imageData.length;
+
   const detectFaces = async () => {
     const detections = await faceapi.detectAllFaces(
       imgRef.current,
       new faceapi.TinyFaceDetectorOptions()
     );
-    canvasRef.current.innerHtml = faceapi.createCanvasFromMedia(imgRef.current);
+    if (state.imageData) {
+      canvasRef.current.innerHtml = faceapi.createCanvasFromMedia(
+        imgRef.current
+      );
 
-    faceapi.matchDimensions(canvasRef.current, imgRef.current);
-    faceapi.draw.drawDetections(canvasRef.current, detections);
-
-    detections?.length && setState({ ...state, loading: false });
+      faceapi.matchDimensions(canvasRef.current, imgRef.current);
+      faceapi.draw.drawDetections(canvasRef.current, detections);
+    }
   };
 
   useEffect(() => {
-    const loadModelsAndDetectFaces = () =>
-      Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri("/models")])
+    const loadModelsAndDetectFaces = () => {
+      return Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri("/models")])
         .then((data) => {
           detectFaces();
         })
         .catch((e) =>
-          setState({ ...state, error: { hasError: true, errorKey: `${e}` } })
+          setState({
+            ...state,
+            error: { hasError: true, errorKey: `${e}` },
+          })
         );
+    };
 
-    imgRef.current && state.imageData && loadModelsAndDetectFaces();
-  }, [state.imageData]);
+    imgRef.current && state.isDetecting && loadModelsAndDetectFaces();
+
+    const observer = new MutationObserver((mutationList, observer) => {
+      mutationList.length &&
+        setState({ ...state, loading: false, isDetecting: false });
+    });
+    observer.observe(canvasRef.current, { attributes: true });
+  }, [state.isDetecting]);
+
+  const handleImageClick = () => {
+    setState({ ...state, loading: true });
+  };
+
+  const handleBackClick = () => {
+    canvasRef.current.setAttribute("width", 0);
+    canvasRef.current.setAttribute("height", 0);
+    setState({
+      loading: false,
+      imageData: "",
+      inputUrl: "",
+      error: {
+        hasError: false,
+        errorKey: null,
+      },
+    });
+  };
 
   return (
     <>
       <GlobalStyle />
+      {state.loading || state.isDetecting ? <LoadingScreen /> : null}
       <AppContainer>
         <Header />
         <ImageContainer>
@@ -93,34 +168,18 @@ const App = () => {
         {!state.imageData ? (
           <FormContainer>
             <UrlInput appState={{ state, setState }} />
-            <ActionButton
-              handleClick={() => {
-                const foo = fetch("/api/image", {
-                  method: "put",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    url: "https://image.shutterstock.com/image-photo/image-business-partners-discussing-documents-600w-125338145.jpg",
-                  }),
-                })
-                  .then((res) => res.json())
-                  .then((res) =>
-                    setState({ ...state, imageData: res.data.imageData })
-                  )
-                  .catch((e) =>
-                    setState({
-                      ...state,
-                      error: { hasError: true, errorKey: `${e}` },
-                    })
-                  );
-              }}
-            >
-              I'm Pomu!
-            </ActionButton>
           </FormContainer>
         ) : null}
+        <ButtonContainer>
+          <ActionButton
+            hasImage={hasImage}
+            handleClick={!hasImage ? handleImageClick : handleBackClick}
+          >
+            {!hasImage ? "I'm Pomu!" : "Back"}
+          </ActionButton>
+        </ButtonContainer>
       </AppContainer>
+      {state.loading ? <GetImage appState={{ state, setState }} /> : null}
     </>
   );
 };
