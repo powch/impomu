@@ -51,7 +51,7 @@ const AppContainer = styled.div({
   alignItems: "center",
 });
 
-const Image = styled.img({});
+const StyledImage = styled.img({});
 
 const Canvas = styled.canvas({
   position: "absolute",
@@ -110,7 +110,21 @@ const App = () => {
       );
 
       faceapi.matchDimensions(canvasRef.current, imgRef.current);
-      faceapi.draw.drawDetections(canvasRef.current, detections);
+      const ctx = canvasRef.current.getContext("2d");
+      const image = new Image();
+      image.src = "/pomu_layer.png";
+      image.onload = () => {
+        detections.forEach((detection) => {
+          const dWidth = detection.box.width;
+          const dHeight = detection.box.height;
+          const adjustedWidth = dWidth * 1.85;
+          const adjustedHeight = dHeight * 2.75;
+          const dX = detection.box.x - (adjustedWidth * 0.25);
+          const dY = detection.box.y - (adjustedHeight / 2);
+
+          ctx.drawImage(image, dX, dY, adjustedWidth, adjustedHeight);
+        });
+      };
     }
   };
 
@@ -162,7 +176,7 @@ const App = () => {
       <AppContainer>
         <Header />
         <ImageContainer>
-          <Image ref={imgRef} src={state.imageData} />
+          <StyledImage ref={imgRef} src={state.imageData} />
           <Canvas ref={canvasRef} />
         </ImageContainer>
         {!state.imageData ? (
