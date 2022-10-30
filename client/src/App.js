@@ -2,16 +2,23 @@ import React, { useRef, useEffect, useState } from "react";
 import styled, { createGlobalStyle } from "styled-components";
 import * as faceapi from "face-api.js";
 
+import { initialState } from "./constants/state";
 import ActionButton from "./components/ActionButton";
 import UrlInput from "./components/UrlInput";
 import Header from "./components/Header";
 import LoadingScreen from "./components/LoadingScreen";
+import ErrorPage from "./components/ErrorPage";
 
 import GetImage from "./rest/GetImage";
 
 const GlobalStyle = createGlobalStyle`
   * {
     font-family: 'Fredoka One', cursive;
+  }
+
+  body {
+    padding: 0;
+    margin: 0;
   }
 
   .bounce-7 {
@@ -49,6 +56,7 @@ const AppContainer = styled.div({
   flexDirection: "column",
   justifyContent: "center",
   alignItems: "center",
+  padding: "0 3rem",
 });
 
 const StyledImage = styled.img({});
@@ -85,17 +93,7 @@ const App = () => {
   const imgRef = useRef();
   const canvasRef = useRef();
 
-  const [state, setState] = useState({
-    loading: false,
-    isDetecting: false,
-    imageData: "",
-    inputUrl:
-      "https://image.shutterstock.com/image-photo/image-business-partners-discussing-documents-600w-125338145.jpg",
-    error: {
-      hasError: false,
-      errorKey: null,
-    },
-  });
+  const [state, setState] = useState(initialState);
 
   const hasImage = state.imageData.length;
 
@@ -119,8 +117,8 @@ const App = () => {
           const dHeight = detection.box.height;
           const adjustedWidth = dWidth * 1.85;
           const adjustedHeight = dHeight * 2.75;
-          const dX = detection.box.x - (adjustedWidth * 0.25);
-          const dY = detection.box.y - (adjustedHeight / 2);
+          const dX = detection.box.x - adjustedWidth * 0.25;
+          const dY = detection.box.y - adjustedHeight / 2;
 
           ctx.drawImage(image, dX, dY, adjustedWidth, adjustedHeight);
         });
@@ -158,20 +156,15 @@ const App = () => {
   const handleBackClick = () => {
     canvasRef.current.setAttribute("width", 0);
     canvasRef.current.setAttribute("height", 0);
-    setState({
-      loading: false,
-      imageData: "",
-      inputUrl: "",
-      error: {
-        hasError: false,
-        errorKey: null,
-      },
-    });
+    setState(initialState);
   };
 
   return (
     <>
       <GlobalStyle />
+      {state.error.hasError ? (
+        <ErrorPage appState={{ state, setState }} />
+      ) : null}
       {state.loading || state.isDetecting ? <LoadingScreen /> : null}
       <AppContainer>
         <Header />

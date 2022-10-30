@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { theme } from "../constants/theme";
 
 const StyledInput = styled.input({
-  width: "50rem",
+  width: "100%",
   height: "4rem",
   borderRadius: "0.75rem",
   border: `2px solid ${theme.greenDarker}`,

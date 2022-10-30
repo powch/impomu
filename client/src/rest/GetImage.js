@@ -25,6 +25,8 @@ const GetImage = ({ appState, children }) => {
       .catch((e) =>
         setState({
           ...state,
+          loading: false,
+          isDetecting: false,
           error: { hasError: true, errorKey: `${e}` },
         })
       );

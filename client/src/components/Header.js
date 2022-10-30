@@ -1,8 +1,6 @@
 import React from "react";
 import styled from "styled-components";
 
-import PomuTitle from "./PomuTitle";
-
 const HeaderContainer = styled.div({
   margin: "8rem 0 5rem 0",
 });
@@ -10,7 +8,7 @@ const HeaderContainer = styled.div({
 const Header = () => {
   return (
     <HeaderContainer>
-      <PomuTitle />
+      <img src="/pomu_title.png" width={"100%"} />
     </HeaderContainer>
   );
 };
