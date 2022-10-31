@@ -102,7 +102,7 @@ const App = () => {
       imgRef.current,
       new faceapi.TinyFaceDetectorOptions()
     );
-    if (state.imageData) {
+    if (state.imageData && detections.length) {
       canvasRef.current.innerHtml = faceapi.createCanvasFromMedia(
         imgRef.current
       );
@@ -123,6 +123,13 @@ const App = () => {
           ctx.drawImage(image, dX, dY, adjustedWidth, adjustedHeight);
         });
       };
+    } else {
+      setState({
+        ...state,
+        error: {
+          hasError: true,
+        },
+      });
     }
   };
 
@@ -179,6 +186,7 @@ const App = () => {
         ) : null}
         <ButtonContainer>
           <ActionButton
+            disabled={!state.inputUrl.length}
             hasImage={hasImage}
             handleClick={!hasImage ? handleImageClick : handleBackClick}
           >

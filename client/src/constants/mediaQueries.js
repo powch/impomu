@@ -1,0 +1,1 @@
+export const DESKTOP = "@media screen and (min-width: 600px)";

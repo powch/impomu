@@ -7,6 +7,7 @@ const LoadingContainer = styled.div({
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
+  width: "100%",
   height: "100vh",
   padding: "0 3rem",
 });
@@ -15,7 +16,7 @@ const LoadingScreen = () => (
   <LoadingContainer>
     <div
       style={{
-        width: "100%",
+        width: "50%",
         animationDuration: "1.25s",
         animationIterationCount: "infinite",
       }}
