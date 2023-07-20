@@ -1,6 +1,7 @@
 const axios = require("axios");
 
 module.exports = {
+  // encode the image as a base64 string to be able to display images cross-domain
   getImage: async (req, res) => {
     await axios({
       url: req.body.url,

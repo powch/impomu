@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "I'm Pomu",
   "private": true,
-  "proxy": "http://localhost:3001",
+  "proxy": "http://localhost:3002",
   "scripts": {
     "clean": "rm -rf ./node_modules && npm i",
     "dev": "webpack --mode development",
@@ -35,9 +35,9 @@
     "webpack-dev-server": "^4.8.1"
   },
   "dependencies": {
-    "@tensorflow/tfjs-core": "^1.2.9",
+    "@tensorflow/tfjs-core": "^4.9.0",
     "babel-plugin-macros": "^3.1.0",
-    "face-api.js": "^0.20.1",
+    "face-api.js": "^0.20.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-modal": "^3.16.1",
